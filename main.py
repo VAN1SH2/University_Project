@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from models import Base, User, Room, Repair_request
 from database import engine, session_local
-from schemas import UserCreate, RoomBase
+from schemas import UserCreate, RoomBase, UserResponse, RoomCreate, RoomResponse
 from sqlalchemy.exc import IntegrityError
 
 app = FastAPI()
@@ -33,14 +33,28 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)) -> User:
 
     db.commit()
     db.refresh(db_user)
-    # except IntegrityError as exc:
-    #     db.rollback()
     return db_user
 
-@app.get("/users/get") 
 
-async def get_user(tg_id: str, db: Session = Depends(get_db)) -> UserResponse:
-    db_user = db.query(User).filter(User.telegram_chat_id == tg_id).first()
+@app.get("/users/get/{telegram_chat_id}") 
+async def get_user(telegram_chat_id: str, db: Session = Depends(get_db)) -> UserResponse:
+    db_user = db.query(User).filter(User.telegram_chat_id == telegram_chat_id).first()
     if db_user is None:
        raise HTTPException(status_code=404, detail="User not found")
     return(db_user)
+
+#_____________________________________________________
+
+# @app.post("/rooms/add/{this_room_number}/{this_dormitory_number}", response_model=RoomCreate)
+# async def create_room(this_room_number: int, this_dormitory_number: int, db:Session = Depends(get_db)):
+#     db_room = Room(room_number= this_room_number, dormitory_number = this_dormitory_number)
+#     db.add(db_room)
+#     db.commit()
+#     db.refresh(db_room)
+
+@app.get("/rooms/get/{room_number}/{dormitory_number}") 
+async def get_room_id(room_number: int, dormitory_number: int, db: Session = Depends(get_db)) -> int:
+    db_room = db.query(Room).filter(Room.dormitory_number == dormitory_number, Room.room_number == room_number).first()
+    if db_room is None:
+       raise HTTPException(status_code=404, detail="Room not found")
+    return db_room.id
