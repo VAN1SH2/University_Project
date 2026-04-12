@@ -19,8 +19,10 @@ class Repair_request(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=True)
-    catecory = Column(String, nullable=False)
+    category = Column(String, nullable=False)
     description = Column(String, nullable=False)
     assigned_master_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     status = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+
 

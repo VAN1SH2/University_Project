@@ -14,7 +14,7 @@ class UserResponse(UserCreate):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 #========================================
 class RoomBase(BaseModel):
     room_number: int
@@ -27,4 +27,20 @@ class RoomResponse(RoomBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+#==========================================
+class RepairRequestBase(BaseModel):
+    user_id: int
+    room_id: int
+    category: str
+    description: str
+    assigned_master_id: int | None = None
+    status:str
+    name: str
+class RepairRequestCreate(RepairRequestBase):
+    pass
+class RepairRequestResponse(RepairRequestBase):
+    id: int
+
+    class Config:
+        from_attributes = True

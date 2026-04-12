@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from models import Base, User, Room, Repair_request
 from database import engine, session_local
-from schemas import UserCreate, RoomBase, UserResponse, RoomCreate, RoomResponse
+from schemas import UserCreate, RoomBase, UserResponse, RoomCreate, RoomResponse, RepairRequestCreate, RepairRequestResponse
 from sqlalchemy.exc import IntegrityError
 
 app = FastAPI()
@@ -58,3 +58,29 @@ async def get_room_id(room_number: int, dormitory_number: int, db: Session = Dep
     if db_room is None:
        raise HTTPException(status_code=404, detail="Room not found")
     return db_room.id
+
+@app.post("/repair_request/add", response_model=RepairRequestCreate)
+async def create_repair_request(repair_request: RepairRequestCreate, db: Session = Depends(get_db)) -> Repair_request:
+    if repair_request.room_id is not None:
+        room = db.query(Room).filter(Room.id == repair_request.room_id).first()
+        if room is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Room with id={repair_request.room_id} does not exist",
+            )
+    if repair_request.user_id is not None:
+        user = db.query(User).filter(User.id == repair_request.user_id).first()
+        if user is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"User with id={repair_request.user_id} does not exist",
+            )
+
+    db_repair_request = User (user_id = repair_request.user_id, room_id = repair_request.room_id, 
+                    description = repair_request.description, assigned_master_id = repair_request.assigned_master_id,
+                    status = repair_request.status, name = repair_request.name)
+    db.add(db_repair_request)
+
+    db.commit()
+    db.refresh(db_repair_request)
+    return db_repair_request
