@@ -44,3 +44,4 @@ class RepairRequestResponse(RepairRequestBase):
 
     class Config:
         from_attributes = True
+

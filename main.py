@@ -42,13 +42,15 @@ async def get_user(telegram_chat_id: str, db: Session = Depends(get_db)) -> User
     if db_user is None:
        raise HTTPException(status_code=404, detail="User not found")
     return(db_user)
+
+
 @app.put("/users/update/{id}", response_model=UserResponse)
 async def update_user(id: str, user_update: UserResponse, db: Session = Depends(get_db)) -> UserResponse:
     db_user = db.query(User).filter(User.id ==int(id)).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     if user_update.room_id is not None:
-        room = db.query(Room).filter(Room.id == user_update.room_id).first()
+        room = db.query(Room).fiёlter(Room.id == user_update.room_id).first()
         if room is None:
             raise HTTPException(
                 status_code=400,
@@ -62,6 +64,8 @@ async def update_user(id: str, user_update: UserResponse, db: Session = Depends(
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
 
 #_____________________________________________________
 
@@ -96,7 +100,7 @@ async def create_repair_request(repair_request: RepairRequestCreate, db: Session
                 detail=f"User with id={repair_request.user_id} does not exist",
             )
 
-    db_repair_request = User (user_id = repair_request.user_id, room_id = repair_request.room_id, 
+    db_repair_request = Repair_request (user_id = repair_request.user_id, room_id = repair_request.room_id, 
                     description = repair_request.description, assigned_master_id = repair_request.assigned_master_id,
                     status = repair_request.status, name = repair_request.name)
     db.add(db_repair_request)
@@ -104,3 +108,20 @@ async def create_repair_request(repair_request: RepairRequestCreate, db: Session
     db.commit()
     db.refresh(db_repair_request)
     return db_repair_request
+
+# ------------------------------------------------------------------------------
+@app.get("/repair_requests/get")
+async def get_repair_requests(db: Session = Depends(get_db)) -> list[RepairRequestResponse]:
+    db_repair_requests = db.query(Repair_request).all()
+    return db_repair_requests
+
+@app.patch("/repair_requests/update_status/{id}/{status_update}") 
+async def update_repair_request(id: int, status_update: str, db: Session = Depends(get_db)) -> RepairRequestResponse:
+    db_repair_request = db.query(Repair_request).filter(Repair_request.id == id).first()
+    if db_repair_request is None:
+       raise HTTPException(status_code=404, detail="Repair request not found")
+    db_repair_request.status = status_update
+    db.commit()
+    db.refresh(db_repair_request)
+    return db_repair_request
+
