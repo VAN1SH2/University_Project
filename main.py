@@ -50,7 +50,7 @@ async def update_user(id: str, user_update: UserResponse, db: Session = Depends(
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     if user_update.room_id is not None:
-        room = db.query(Room).fiёlter(Room.id == user_update.room_id).first()
+        room = db.query(Room).filter(Room.id == user_update.room_id).first()
         if room is None:
             raise HTTPException(
                 status_code=400,

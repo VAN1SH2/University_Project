@@ -30,8 +30,8 @@ class RoomResponse(RoomBase):
         from_attributes = True
 #==========================================
 class RepairRequestBase(BaseModel):
-    user_id: int
-    room_id: int
+    user_id: int | None = None
+    room_id: int | None = None
     category: str
     description: str
     assigned_master_id: int | None = None
