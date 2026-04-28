@@ -99,6 +99,13 @@ async def create_repair_request(repair_request: RepairRequestCreate, db: Session
                 status_code=400,
                 detail=f"User with id={repair_request.user_id} does not exist",
             )
+    if repair_request.assigned_master_id is not None:
+        assigned_master = db.query(User).filter(User.id == repair_request.assigned_master_id).first()
+        if assigned_master is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"User with id={repair_request.assigned_master_id} does not exist",
+            )
 
     db_repair_request = Repair_request (user_id = repair_request.user_id, room_id = repair_request.room_id, 
                     category = repair_request.category, description = repair_request.description,
@@ -113,7 +120,7 @@ async def create_repair_request(repair_request: RepairRequestCreate, db: Session
 # ------------------------------------------------------------------------------
 @app.get("/repair_requests/get")
 async def get_repair_requests(db: Session = Depends(get_db)) -> list[RepairRequestResponse]:
-    db_repair_requests = db.query(Repair_request).all()
+    db_repair_requests = db.query(Repair_request).filter(Repair_request.status == "new").all()
     return db_repair_requests
 
 @app.patch("/repair_requests/update_status/{id}/{status_update}") 
