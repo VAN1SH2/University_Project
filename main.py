@@ -83,7 +83,7 @@ async def get_room_id(room_number: int, dormitory_number: int, db: Session = Dep
        raise HTTPException(status_code=404, detail="Room not found")
     return db_room.id
 
-@app.post("/repair_request/add", response_model=RepairRequestCreate)
+@app.post("/repair_request/add", response_model=RepairRequestResponse)
 async def create_repair_request(repair_request: RepairRequestCreate, db: Session = Depends(get_db)) -> Repair_request:
     if repair_request.room_id is not None:
         room = db.query(Room).filter(Room.id == repair_request.room_id).first()
@@ -101,7 +101,8 @@ async def create_repair_request(repair_request: RepairRequestCreate, db: Session
             )
 
     db_repair_request = Repair_request (user_id = repair_request.user_id, room_id = repair_request.room_id, 
-                    description = repair_request.description, assigned_master_id = repair_request.assigned_master_id,
+                    category = repair_request.category, description = repair_request.description,
+                    assigned_master_id = repair_request.assigned_master_id,
                     status = repair_request.status, name = repair_request.name)
     db.add(db_repair_request)
 
