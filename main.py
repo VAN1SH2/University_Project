@@ -42,6 +42,26 @@ async def get_user(telegram_chat_id: str, db: Session = Depends(get_db)) -> User
     if db_user is None:
        raise HTTPException(status_code=404, detail="User not found")
     return(db_user)
+@app.put("/users/update/{id}", response_model=UserResponse)
+async def update_user(id: str, user_update: UserResponse, db: Session = Depends(get_db)) -> UserResponse:
+    db_user = db.query(User).filter(User.id ==int(id)).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user_update.room_id is not None:
+        room = db.query(Room).filter(Room.id == user_update.room_id).first()
+        if room is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Room with id={user_update.room_id} does not exist",
+            )
+    db_user.full_name = user_update.full_name
+    db_user.phone = user_update.phone   
+    db_user.telegram_chat_id = user_update.telegram_chat_id
+    db_user.room_id = user_update.room_id
+    db_user.user_role = user_update.user_role
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 #_____________________________________________________
 
