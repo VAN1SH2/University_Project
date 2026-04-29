@@ -120,7 +120,7 @@ async def create_repair_request(repair_request: RepairRequestCreate, db: Session
 # ------------------------------------------------------------------------------
 @app.get("/repair_requests/get")
 async def get_repair_requests(db: Session = Depends(get_db)) -> list[RepairRequestResponse]:
-    db_repair_requests = db.query(Repair_request).filter(Repair_request.status == "new").all()
+    db_repair_requests = db.query(Repair_request).all()
     return db_repair_requests
 
 @app.patch("/repair_requests/update_status/{id}/{status_update}") 
