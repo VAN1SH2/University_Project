@@ -82,6 +82,14 @@ async def get_room_id(room_number: int, dormitory_number: int, db: Session = Dep
     if db_room is None:
        raise HTTPException(status_code=404, detail="Room not found")
     return db_room.id
+@app.get("/rooms/get_by_id/{room_id}", response_model=RoomResponse)
+async def get_room_by_id(room_id: int, db: Session = Depends(get_db)) -> RoomResponse:
+    db_room = db.query(Room).filter(Room.id == room_id).first()
+    if db_room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return db_room
+
+
 
 @app.post("/repair_request/add", response_model=RepairRequestResponse)
 async def create_repair_request(repair_request: RepairRequestCreate, db: Session = Depends(get_db)) -> Repair_request:
@@ -123,6 +131,28 @@ async def get_repair_requests(db: Session = Depends(get_db)) -> list[RepairReque
     db_repair_requests = db.query(Repair_request).all()
     return db_repair_requests
 
+@app.get("/repair_requests/get_by_user_id/{id}", response_model=list[RepairRequestResponse])
+async def get_repair_requests_by_user_id(id: int, db: Session = Depends(get_db)) -> list[RepairRequestResponse]:
+    db_repair_requests = db.query(Repair_request).filter(Repair_request.user_id == id).all()
+    return db_repair_requests
+
+
+@app.patch("/repair_requests/update_assigned_master/{id}/{assigned_master_id}") 
+async def update_assigned_master(id: int, assigned_master_id: int, db: Session = Depends(get_db)) -> RepairRequestResponse:
+    db_repair_request = db.query(Repair_request).filter(Repair_request.id == id).first()
+    if db_repair_request is None:
+       raise HTTPException(status_code=404, detail="Repair request not found")
+    assigned_master = db.query(User).filter(User.id == assigned_master_id).first()
+    if assigned_master is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"User with id={assigned_master_id} does not exist",
+        )
+    db_repair_request.assigned_master_id = assigned_master_id
+    db.commit()
+    db.refresh(db_repair_request)
+    return db_repair_request
+
 @app.patch("/repair_requests/update_status/{id}/{status_update}") 
 async def update_repair_request(id: int, status_update: str, db: Session = Depends(get_db)) -> RepairRequestResponse:
     db_repair_request = db.query(Repair_request).filter(Repair_request.id == id).first()
@@ -133,3 +163,11 @@ async def update_repair_request(id: int, status_update: str, db: Session = Depen
     db.refresh(db_repair_request)
     return db_repair_request
 
+@app.delete("/repair_requests/delete/{id}")
+async def delete_repair_request(id: int, db: Session = Depends(get_db)):
+    db_repair_request = db.query(Repair_request).filter(Repair_request.id == id).first()
+    if db_repair_request is None:
+       raise HTTPException(status_code=404, detail="Repair request not found")
+    db.delete(db_repair_request)
+    db.commit()
+    return {"detail": "Repair request deleted successfully"}    
