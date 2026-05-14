@@ -69,12 +69,12 @@ async def update_user(id: str, user_update: UserResponse, db: Session = Depends(
 
 #_____________________________________________________
 
-# @app.post("/rooms/add/{this_room_number}/{this_dormitory_number}", response_model=RoomCreate)
-# async def create_room(this_room_number: int, this_dormitory_number: int, db:Session = Depends(get_db)):
-#     db_room = Room(room_number= this_room_number, dormitory_number = this_dormitory_number)
-#     db.add(db_room)
-#     db.commit()
-#     db.refresh(db_room)
+@app.post("/rooms/add/{this_room_number}/{this_dormitory_number}", response_model=RoomCreate)
+async def create_room(this_room_number: int, this_dormitory_number: int, db:Session = Depends(get_db)):
+    db_room = Room(room_number= this_room_number, dormitory_number = this_dormitory_number)
+    db.add(db_room)
+    db.commit()
+    db.refresh(db_room)
 
 @app.get("/rooms/get/{room_number}/{dormitory_number}") 
 async def get_room_id(room_number: int, dormitory_number: int, db: Session = Depends(get_db)) -> int:

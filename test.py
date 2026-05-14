@@ -13,5 +13,5 @@ data = {
 for i in range (2, 17):
     for j in range (1, 46):
         room_number = str(i)+str(j)
-        url = f'http://192.168.0.131:8000/rooms/add/{room_number}/{i}'
+        url = f'http://157.22.199.32/rooms/add/{room_number}/{i}'
         response = requests.post(url)
