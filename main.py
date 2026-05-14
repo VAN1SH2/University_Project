@@ -137,21 +137,24 @@ async def get_repair_requests_by_user_id(id: int, db: Session = Depends(get_db))
     return db_repair_requests
 
 
-@app.patch("/repair_requests/update_assigned_master/{id}/{assigned_master_id}") 
-async def update_assigned_master(id: int, assigned_master_id: int, db: Session = Depends(get_db)) -> RepairRequestResponse:
+@app.patch("/repair_requests/update_assigned_master/{id}/{assigned_master_id}", response_model=RepairRequestResponse)
+async def update_assigned_master(
+    id: int,
+    assigned_master_id: int,
+    db: Session = Depends(get_db),
+) -> RepairRequestResponse:
     db_repair_request = db.query(Repair_request).filter(Repair_request.id == id).first()
+
     if db_repair_request is None:
-       raise HTTPException(status_code=404, detail="Repair request not found")
-    assigned_master = db.query(User).filter(User.id == assigned_master_id).first()
-    if assigned_master is None:
-        raise HTTPException(
-            status_code=400,
-            detail=f"User with id={assigned_master_id} does not exist",
-        )
+        raise HTTPException(status_code=404, detail="Repair request not found")
+
     db_repair_request.assigned_master_id = assigned_master_id
+
     db.commit()
     db.refresh(db_repair_request)
+
     return db_repair_request
+
 
 @app.patch("/repair_requests/update_status/{id}/{status_update}") 
 async def update_repair_request(id: int, status_update: str, db: Session = Depends(get_db)) -> RepairRequestResponse:
